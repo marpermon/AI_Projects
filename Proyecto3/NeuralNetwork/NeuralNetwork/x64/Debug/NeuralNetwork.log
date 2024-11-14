@@ -1,0 +1,3 @@
+﻿  main.cpp
+C:\Users\sonic\OneDrive\Escritorio\2 2024\AI_Projects\Proyecto3\NeuralNetwork\NeuralNetwork\src\main.cpp(21,12): warning C4267: 'initializing': conversion from 'size_t' to 'uint', possible loss of data
+  NeuralNetwork.vcxproj -> C:\Users\sonic\OneDrive\Escritorio\2 2024\AI_Projects\Proyecto3\NeuralNetwork\bin\x64\Debug\NeuralNetwork.exe
