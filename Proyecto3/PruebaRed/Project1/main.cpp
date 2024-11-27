@@ -6,21 +6,6 @@
 #include "NeuralNetwork.h"
 #include <stdexcept>
 
-template <typename T>
-std::vector<T> getFirstN(const std::vector<T>& vec, size_t n) {
-    if (n > vec.size()) {
-        throw std::out_of_range("Requested size exceeds the vector size");
-    }
-    return std::vector<T>(vec.begin(), vec.begin() + n);
-}
-
-template <typename T>
-std::vector<T> getLastN(const std::vector<T>& vec, size_t n) {
-    if (n > vec.size()) {
-        throw std::out_of_range("Requested size exceeds the vector size");
-    }
-    return std::vector<T>(vec.end() - n, vec.end());
-}
 
 
 std::vector<std::vector<float>> readCSVToVector(const std::string& filename) {
@@ -60,41 +45,61 @@ std::vector<std::vector<float>> readCSVToVector(const std::string& filename) {
 
 
 int main()
-{
-	std::vector<uint32_t> topology = {6,7,6};
+{   
+    size_t n;
+
+	std::vector<uint32_t> topology = {6,7,7,6};
 	SimpleNeuralNetwork nn(topology, 0.1);
 
 	std::string inputFile = "features.csv";
     std::vector<std::vector<float>> targetInputs = readCSVToVector(inputFile);
+    n = round(targetInputs.size()*0.8);
+    std::vector<std::vector<float>> targetInputsTrain(targetInputs.begin(), targetInputs.begin() + n);
+
+    n = round(targetInputs.size()*0.2);
+    std::vector<std::vector<float>> targetInputsValidate(targetInputs.begin(), targetInputs.begin() + n);
 
 	std::string outputFile = "labels.csv";
     std::vector<std::vector<float>> targetOutputs = readCSVToVector(inputFile);
-	size_t rows = vec2D.size();
-
+    n = round(targetOutputs.size()*0.8);
+    std::vector<std::vector<float>> targetOutputsTrain(targetOutputs.begin(), targetOutputs.begin() + n);
 	
-	std::vector<int> first4 = getFirstN(original, 4);
-
-        // Get the last 3 values
-    std::vector<int> last3 = getLastN(original, 3);
+    n = round(targetOutputs.size()*0.2);
+    std::vector<std::vector<float>> targetOutputsValidate(targetOutputs.begin(), targetOutputs.begin() + n);
+	
 	uint32_t  epoch = 1000;
+    uint32_t  k = 0;
 
 	std::cout << "training started\n";
 
 	for (uint32_t i = 0; i < epoch; i++)
 	{
 		uint32_t index = rand() % 4;
-		nn.FeedFordward(targetInputs[index]);
-		nn.backPropagate(targetOutputs[index]);
+		nn.FeedFordward(targetInputsTrain[index]);
+		nn.backPropagate(targetOutputsTrain[index]);
 	}
 
 	std::cout << "training completed\n";
 
-	for (auto input : targetInputs)
+	for (auto input : targetInputsValidate)
 	{
 		nn.FeedFordward(input);
 		auto preds = nn.getPrediction();
-		std::cout << input[0] << "," << input[1] << " -> " << preds[0]
-			<< std::endl;
+        for(int i=0; i < input.size()-1; i++){
+            std::cout << input[i] << ", ";
+        }
+        std::cout << input[input.size()-1];
+
+        std::cout << " -> " ;
+        
+        std::vector<float> real = targetOutputsValidate[k];
+
+        float error = 0;
+        for(int i=0; i < preds.size()-1; i++){
+            error += pow((preds[i] - real[i]),2);
+        }
+        error = sqrt(error);
+        std::cout << "Error = " << error << std::endl;      
 	}
 	return 0;
 }
