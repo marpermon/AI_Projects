@@ -1,27 +1,58 @@
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
 #include <iostream>
 #include "NeuralNetwork.h"
+
+std::vector<std::vector<float>> readCSVToVector(const std::string& filename) {
+    std::vector<std::vector<float>> data;
+    std::ifstream file(filename);
+
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file " << filename << std::endl;
+        return data;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty()) continue; // Skip empty lines
+
+        std::vector<float> row;
+        std::stringstream ss(line);
+        std::string value;
+
+        while (std::getline(ss, value, ',')) {
+            try {
+                row.push_back(std::stof(value)); // Convert each value to float
+            } catch (const std::exception& e) {
+                std::cerr << "Error: Invalid value '" << value << "' in file " << filename << std::endl;
+                return {}; // Return an empty vector on failure
+            }
+        }
+
+        if (!row.empty()) {
+            data.push_back(row); // Add valid row to the data
+        }
+    }
+
+    file.close();
+    return data;
+}
 
 
 int main()
 {
-	std::vector<uint32_t> topology = { 2,3,1 };
+	std::vector<uint32_t> topology = {6,7,6 };
 	SimpleNeuralNetwork nn(topology, 0.1);
 
-	std::vector<std::vector<float>> targetInputs{
-		{0.0f,0.0f},
-		{1.0f,1.0f},
-		{1.0f,0.0f},
-		{0.0f,1.0f}
-	};
+	std::string inputFile = "features.csv";
+    std::vector<std::vector<float>> targetInputs = readCSVToVector(inputFile);
 
-	std::vector<std::vector<float>> targetOutputs{
-		{0.0f},
-		{0.0f},
-		{1.0f},
-		{1.0f}
-	};
+	std::string outputFile = "labels.csv";
+    std::vector<std::vector<float>> targetOutputs = readCSVToVector(inputFile);
 
-	uint32_t  epoch = 100000;
+	uint32_t  epoch = 1000;
 
 	std::cout << "training started\n";
 
