@@ -12,12 +12,12 @@
 
 inline float Sigmoid(float x) 
 {
-	return 1.0 / (1 + exp(-x));
+	return tanh(x);
 }
 
 inline float DSigmoid(float x)
 {
-	return x*(1-x);
+	return 1-tanh(x)*tanh(x);
 }
 
 class SimpleNeuralNetwork
