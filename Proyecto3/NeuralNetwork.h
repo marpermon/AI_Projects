@@ -10,14 +10,14 @@
 
 */
 
-inline float Sigmoid(float x) 
+inline float Activation(float x) 
 {
-	return tanh(x);
+	return x;
 }
 
-inline float DSigmoid(float x)
+inline float DActivation(float x)
 {
-	return 1-tanh(x)*tanh(x);
+	return 1.0;
 }
 
 class SimpleNeuralNetwork
@@ -51,7 +51,7 @@ public:
 			Matrix biasMatrix(topology[i + 1], 1);
 			biasMatrix = biasMatrix.applyFunction(
 				[](const float& f) {
-					return (float)rand() / RAND_MAX;
+					return ((float)rand() / RAND_MAX - 0.5f) * 0.1f;
 				}
 			);
 			_biasMatrices.push_back(biasMatrix);
@@ -72,7 +72,7 @@ public:
 			_valueMatrices[i] = values;
 			values = values.multiply(_weightMatrices[i]);
 			values = values.add(_biasMatrices[i]);
-			values = values.applyFunction(Sigmoid);
+			values = values.applyFunction(Activation);
 		}
 		_valueMatrices[_weightMatrices.size()] = values;
 		return true;
@@ -94,7 +94,7 @@ public:
 			Matrix trans = _weightMatrices[i].transpose();
 			Matrix prevErrors = errors.multiply(trans);
 			Matrix dOutput = _valueMatrices[i + 1].applyFunction(
-				DSigmoid
+				DActivation
 			);
 
 			Matrix gradients = errors.multiplyElements(dOutput);

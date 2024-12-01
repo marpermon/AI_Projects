@@ -49,7 +49,7 @@ void genData(std::string filename)
 {
     std::ofstream file1(filename + "-in.csv");
     std::ofstream file2(filename + "-out.csv");
-    for (uint r = 0; r < 5000; r++) {
+    for (uint32_t r = 0; r < 5000; r++) {
         float x = rand() / float(RAND_MAX);
         float y = rand() / float(RAND_MAX);
         file1 << x << ", " << y << std::endl;
@@ -64,26 +64,29 @@ int main()
     size_t n;
     genData("test");
 
-	std::vector<uint32_t> topology = {2,3,1};
+	std::vector<uint32_t> topology = {2,2,1};
 	SimpleNeuralNetwork nn(topology, 0.1);
+
+    float train = 0.9;
+    float validate = 0.1;
 
 	std::string inputFile = "test-in.csv";
     std::vector<std::vector<float>> targetInputs = readCSVToVector(inputFile);
-    n = round(targetInputs.size()*0.8);
+    n = round(targetInputs.size() * train);
     std::vector<std::vector<float>> targetInputsTrain(targetInputs.begin(), targetInputs.begin() + n);
 
-    n = round(targetInputs.size()*0.2);
+    n = round(targetInputs.size() * validate);
     std::vector<std::vector<float>> targetInputsValidate(targetInputs.begin(), targetInputs.begin() + n);
 
 	std::string outputFile = "test-out.csv";
     std::vector<std::vector<float>> targetOutputs = readCSVToVector(inputFile);
-    n = round(targetOutputs.size()*0.8);
+    n = round(targetOutputs.size() * train);
     std::vector<std::vector<float>> targetOutputsTrain(targetOutputs.begin(), targetOutputs.begin() + n);
 	
-    n = round(targetOutputs.size()*0.2);
+    n = round(targetOutputs.size() * validate);
     std::vector<std::vector<float>> targetOutputsValidate(targetOutputs.begin(), targetOutputs.begin() + n);
 	
-	uint32_t  epoch = 10000;
+	uint32_t  epoch = 20000;
     uint32_t  k = 0;
 
 	std::cout << "training started\n";
@@ -102,7 +105,7 @@ int main()
 	{
 		nn.FeedFordward(input);
 		auto preds = nn.getPrediction();
-        for(int i=0; i < input.size()-1; i++){
+        for(uint32_t i=0; i < input.size()-1; i++){
             std::cout << std::left << std::setw(10) << input[i] << ", ";
         }
         std::cout << std::left << std::setw(10) << input[input.size()-1];

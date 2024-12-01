@@ -12,21 +12,9 @@ class Matrix
 		uint32_t _rows;
 		std::vector<float> _vals;
 	public:
-		Matrix()
-			:_cols(0),
-			_rows(0),
-			_vals({})
-		{
+		Matrix():_cols(0), _rows(0),_vals({}){}
 
-		}
-
-		Matrix(uint32_t cols, uint32_t rows)
-			:_cols(cols),
-			_rows(rows),
-			_vals({})
-		{
-			_vals.resize(cols * rows, 0.0f);
-		}
+		Matrix(uint32_t cols, uint32_t rows):_cols(cols), _rows(rows), _vals(cols * rows, 0.0f){}
 
 		Matrix applyFunction(std::function<float(const float&)> func)
 		{
