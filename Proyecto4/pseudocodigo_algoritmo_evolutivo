@@ -1,0 +1,45 @@
+1. Inicializar población
+   - Definir parámetros del algoritmo evolutivo:
+       - Tamaño de la población (N)
+       - Tasa de cruce (Pc)
+       - Tasa de mutación (Pm)
+       - Número de generaciones (Gmax)
+   - Crear N redes neuronales iniciales:
+       a. Para cada red en la población:
+           i. Usar la clase `SimpleNeuralNetwork` con la misma topología.
+           ii. Asignar pesos iniciales aleatorios a las matrices de cada red (ya implementado en el constructor).
+
+2. Evaluar aptitud:
+   - Para cada red en la población:
+       a. Alimentar datos de entrada (`FeedFordward`) y obtener predicciones.
+       b. Calcular el error con respecto a las salidas esperadas usando una función de error, como MSE.
+       c. Asignar una aptitud basada en el error (por ejemplo, aptitud = 1 / (1 + error)).
+
+3. Repetir por cada generación (hasta Gmax o criterio de parada):
+   a. Selección:
+       - Usar el método de torneo para seleccionar pares de padres:
+           i. Elegir K redes neuronales aleatorias de la población.
+           ii. Seleccionar la red con mejor aptitud.
+
+   b. Cruce:
+       - Para cada par de padres seleccionados, realizar cruce con probabilidad Pc:
+           i. Combinar las matrices de pesos y sesgos de ambos padres (por ejemplo, usando media aritmética o combinación uniforme).
+           ii. Generar dos nuevos hijos con los pesos combinados.
+
+   c. Mutación:
+       - Para cada peso y sesgo de los hijos generados, aplicar mutación con probabilidad Pm:
+           i. Añadir un pequeño valor aleatorio (ruido) al peso/sesgo seleccionado (por ejemplo, una muestra de una distribución normal).
+
+   d. Evaluar aptitud:
+       - Evaluar la aptitud de los hijos utilizando el mismo método del paso 2.
+
+   e. Reemplazo:
+       - Combinar la población actual con los hijos generados.
+       - Seleccionar las mejores N redes basándose en la aptitud para formar la nueva población.
+
+4. Finalizar:
+   - Elegir la red neuronal con la mejor aptitud de la última generación como solución.
+   - Asignar sus pesos entrenados a una instancia de `SimpleNeuralNetwork`.
+
+5. Salida:
+   - Retornar la red neuronal optimizada y su error final.
