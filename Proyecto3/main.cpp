@@ -59,44 +59,77 @@ void genData(std::string filename)
     file2.close();
 }
 
+std::vector<std::vector<float>> sliceData(std::string inputFile, float amount) 
+{
+    std::vector<std::vector<float>> target= readCSVToVector(inputFile);
+    size_t n = round(target.size() * amount);
+    std::vector<std::vector<float>> targetSlice(target.begin(), target.begin() + n);
+    return targetSlice;
+}
+
+
+
 int main()
 {   
-    size_t n;
     genData("test");
 
 	std::vector<uint32_t> topology = {2,3,1};
 	SimpleNeuralNetwork nn(topology, 0.1);
 
     float train = 0.9;
-    float validate = 0.1;
-
-	std::string inputFile = "test-in.csv";
-    std::vector<std::vector<float>> targetInputs = readCSVToVector(inputFile);
-    n = round(targetInputs.size() * train);
-    std::vector<std::vector<float>> targetInputsTrain(targetInputs.begin(), targetInputs.begin() + n);
-
-    n = round(targetInputs.size() * validate);
-    std::vector<std::vector<float>> targetInputsValidate(targetInputs.begin(), targetInputs.begin() + n);
-
-	std::string outputFile = "test-out.csv";
-    std::vector<std::vector<float>> targetOutputs = readCSVToVector(inputFile);
-    n = round(targetOutputs.size() * train);
-    std::vector<std::vector<float>> targetOutputsTrain(targetOutputs.begin(), targetOutputs.begin() + n);
+    float validate = 0.1; 
+       
+    std::vector<std::vector<float>> targetInputsTrain = sliceData("test-in.csv", train);
+    std::vector<std::vector<float>> targetInputsValidate = sliceData("test-in.csv", validate);
+    std::vector<std::vector<float>> targetOutputsTrain = sliceData("test-out.csv", train);
+    std::vector<std::vector<float>> targetOutputsValidate = sliceData("test-out.csv", validate);
 	
-    n = round(targetOutputs.size() * validate);
-    std::vector<std::vector<float>> targetOutputsValidate(targetOutputs.begin(), targetOutputs.begin() + n);
-	
-	uint32_t  epoch = 20000;
+	uint32_t  epoch = 1000;
     uint32_t  k = 0;
 
-	std::cout << "training started\n";
+    std::cout << "Population evaluation\n";
 
-	for (uint32_t i = 0; i < epoch; i++)
+    uint32_t index = 100; // datos con los que vamos a evaluar la matriz
+    
+    for (uint32_t i = 0; i < nn._populationSize; i++)
+    {
+        nn.Initialize();
+        float averError = 0;
+        
+        for (size_t j = 0; j < index; j++)
+        {
+            nn.FeedFordward(targetInputsTrain[j]);
+
+            //  no backpropagation, vamos a ver cómo funciona esta inicializacion para 
+            //  varios valores así como está
+
+            auto preds = nn.getPrediction();
+            std::vector<float> real = targetOutputsTrain[j];
+            // La predicción sólo tiene un valor
+            float errorP = (preds[0] - real[0]) * 100.0 / real[0];
+            averError += errorP;
+        }
+
+        averError /= index; //sacamos en error promedio de la matriz para los primeros 100 datos
+            
+        _candidate Candidate;
+        Candidate.weightC = nn._weightMatrices;
+        Candidate.biasC = nn._biasMatrices;
+        Candidate.error = averError;
+        nn._population.push_back(Candidate);
+        nn.flush();
+        std::cout << "\rprogress : ";
+        std::cout << static_cast<double>(i) * 100.0 / static_cast<double>(nn._populationSize) << " %" << std::flush;
+    }
+    std::cout << "Population evaluated\n";
+
+	/*for (uint32_t i = 0; i < epoch; i++)
 	{
 		uint32_t index = rand() % 4;
 		nn.FeedFordward(targetInputsTrain[index]);
 		nn.backPropagate(targetOutputsTrain[index]);
-        std::cout << "\rprogress : " << static_cast<double>(i) * 100.0 / static_cast<double>(epoch) << " %" << std::flush;
+        std::cout << "\rprogress : ";
+        std::cout << static_cast<double>(i) * 100.0 / static_cast<double>(epoch) << " %" << std::flush;
 	}
 
 	std::cout << "training completed\n";
@@ -118,6 +151,6 @@ int main()
         std::cout << "Predicted = " << std::left << std::setw(10) << preds[0] << ", Real =" << std::setw(10) << real[0];
         std::cout <<  " Diff = " << std::left << std::abs(preds[0] - real[0])*100.0/real[0] << "%\n";        
         k++;      
-	}
+	}*/
 	return 0;
 }
