@@ -115,9 +115,13 @@ public:
 		sortCandidates();
 		uint32_t parent1 = rand() % (int)(_populationSize / 2.0);
 		uint32_t parent2 = rand() % (int)(_populationSize / 2.0);
-		Matrix OffspringWeights
+		
+		/*for (size_t i = 0; i < length; i++)
+		{
+			Matrix OffspringWeights = _population[parent1].weightC;
+		}
 
-		return true;
+		return true;*/
 	}
 
 	std::vector<float> getPrediction()
