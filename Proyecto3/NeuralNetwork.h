@@ -97,11 +97,6 @@ public:
 		return true;
 	}
 
-	struct MyStruct {
-		int id;       // An identifier
-		float value;  // The numerical attribute to sort by
-	};
-
 	// Function to sort the vector of structs
 	void sortCandidates() {
 		std::sort(_population.begin(), _population.end(), [](const _candidate& a, const _candidate& b) {
@@ -110,18 +105,38 @@ public:
 	}
 
 
-	bool backPropagateEvolution(std::vector<float> targetOutput)
+	bool Crossover()
 	{
 		sortCandidates();
 		uint32_t parent1 = rand() % (int)(_populationSize / 2.0);
 		uint32_t parent2 = rand() % (int)(_populationSize / 2.0);
+		std::vector<Matrix> OffWeights = {};
+		std::vector<Matrix> OffBiases = {};
 		
-		/*for (size_t i = 0; i < length; i++)
+		for (size_t i = 0; i < _topology.size() - 1; i++)
 		{
-			Matrix OffspringWeights = _population[parent1].weightC;
+			Matrix OffspringWeight = _population[parent1].weightC[i].averageElements( _population[parent2].weightC[i] );
+			Matrix OffspringBias = _population[parent1].biasC[i].averageElements( _population[parent2].biasC[i] );
+			OffWeights.push_back(OffspringWeight);
+			OffBiases.push_back(OffspringBias);
 		}
 
-		return true;*/
+		_weightMatrices = OffWeights;
+		_biasMatrices = OffBiases;
+
+		return true;
+	}
+
+
+	bool Replace(float error) {
+		if (error < _population.back().error) {
+			_candidate NewCandidate;
+			NewCandidate.weightC = _weightMatrices;
+			NewCandidate.biasC = _biasMatrices;
+			NewCandidate.error = error;
+			_population.back() = NewCandidate;
+			sortCandidates;
+		}
 	}
 
 	std::vector<float> getPrediction()

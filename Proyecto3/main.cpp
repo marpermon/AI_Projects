@@ -106,7 +106,7 @@ int main()
             auto preds = nn.getPrediction();
             std::vector<float> real = targetOutputsTrain[j];
             // La predicción sólo tiene un valor
-            float errorP = (preds[0] - real[0]) * 100.0 / real[0];
+            float errorP = abs(preds[0] - real[0]) * 100.0 / real[0];
             averError += errorP;
         }
 
@@ -123,11 +123,20 @@ int main()
     }
     std::cout << "Population evaluated\n";
 
-	/*for (uint32_t i = 0; i < epoch; i++)
+    std::cout << "training started\n";
+
+	for (uint32_t i = 0; i < epoch; i++)
 	{
-		uint32_t index = rand() % 4;
+		uint32_t index = rand() % (int)(targetInputsTrain.size() - 1);
+		nn.Crossover();
 		nn.FeedFordward(targetInputsTrain[index]);
-		nn.backPropagate(targetOutputsTrain[index]);
+        
+        std::vector<float> real = targetOutputsValidate[index];
+        auto preds = nn.getPrediction();
+        float parError = abs(preds[0] - real[0]) * 100.0 / real[0];
+
+        nn.Replace(parError);
+
         std::cout << "\rprogress : ";
         std::cout << static_cast<double>(i) * 100.0 / static_cast<double>(epoch) << " %" << std::flush;
 	}
@@ -151,6 +160,6 @@ int main()
         std::cout << "Predicted = " << std::left << std::setw(10) << preds[0] << ", Real =" << std::setw(10) << real[0];
         std::cout <<  " Diff = " << std::left << std::abs(preds[0] - real[0])*100.0/real[0] << "%\n";        
         k++;      
-	}*/
+	}
 	return 0;
 }
