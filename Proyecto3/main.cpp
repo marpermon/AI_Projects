@@ -6,17 +6,6 @@
 #include "NeuralNetwork.h"
 #include <stdexcept>
 #include <iomanip>
-#include <random>
-
-// Function to generate a random number in the range [min, max]
-uint32_t getRandomNumber(uint32_t min, uint32_t max) {
-    // Create a random device and seed
-    std::random_device rd;
-    std::mt19937 generator(rd()); // Use Mersenne Twister for random number generation
-    std::uniform_int_distribution<uint32_t> distribution(min, max);
-    return distribution(generator);
-}
-
 
 
 
@@ -64,8 +53,7 @@ void genData(std::string filename)
         float x = rand() / float(RAND_MAX);
         float y = rand() / float(RAND_MAX);
         file1 << x << ", " << y << std::endl;
-        float q = 2 * x + 10 *y;
-        file2 << q << std::endl;
+        file2 << 2 * x + 10 + y << std::endl;
     }
     file1.close();
     file2.close();
@@ -97,73 +85,22 @@ int main()
     std::vector<std::vector<float>> targetOutputsValidate = sliceData("test-out.csv", validate);
 	
 	uint32_t  epoch = 10000;
-    
+    uint32_t  k = 0;
 
-    std::cout << "Population evaluation\n";
+	std::cout << "training started\n";
 
-    uint32_t index = 100; // datos con los que vamos a evaluar la matriz
-    
-    for (uint32_t i = 0; i < nn._populationSize; i++)
-    {
-        nn.Initialize();
-        float averError = 0;
-        
-        for (size_t j = 0; j < index; j++)
-        {
-            nn.FeedFordward(targetInputsTrain[j]);
-
-            //  no backpropagation, vamos a ver cómo funciona esta inicializacion para 
-            //  varios valores así como está
-
-            auto preds = nn.getPrediction();
-            std::vector<float> real = targetOutputsTrain[j];
-            // La predicción sólo tiene un valor
-            float errorP = abs(preds[0] - real[0]) * 100.0 / real[0];
-            averError += errorP;
-        }
-
-        averError /= index; //sacamos en error promedio de la matriz para los primeros 100 datos
-            
-        _candidate Candidate;
-        Candidate.weightC = nn._weightMatrices;
-        Candidate.biasC = nn._biasMatrices;
-        Candidate.error = averError;
-        nn._population.push_back(Candidate);
-        nn.flush();
-        std::cout << "\rprogress : ";
-        std::cout << static_cast<double>(i) * 100.0 / static_cast<double>(nn._populationSize) << " %" << std::flush;
-    }
-    std::cout << "\nPopulation evaluated\n";
-
-    std::cout << "training started\n";
-
-	for (uint32_t m = 0; m < epoch; m++)
+	for (uint32_t i = 0; i < epoch; i++)
 	{
-        nn.Crossover();
-        float parError = 0;
-
-        for (uint32_t i = 0; i < index; i++)
-        {
-            uint32_t p = getRandomNumber(0, targetInputsTrain.size() - 1);
-            std::vector<float> t = targetInputsTrain[p];
-
-            nn.FeedFordward(t);
-
-            std::vector<float> real = targetOutputsTrain[p];
-            auto preds = nn.getPrediction();
-            parError += abs(preds[0] - real[0]) * 100.0 / real[0];
-        }
-        parError /= index;
-        nn.Replace(parError);
-
-        std::cout << "\rprogress : ";
-        std::cout << static_cast<double>(m) * 100.0 / static_cast<double>(epoch) << " %" << std::flush;
+		uint32_t index = rand() % 4;
+		nn.FeedFordward(targetInputsTrain[index]);
+		nn.backPropagate(targetOutputsTrain[index]);
+        std::cout << "\rprogress : " << static_cast<double>(i) * 100.0 / static_cast<double>(epoch) << " %" << std::flush;
 	}
 
 	std::cout << "training completed\n";
-    float generalError = 0;
 
-    uint32_t  out = 0;
+
+    float generalError = 0;
 	for (auto input : targetInputsValidate)
 	{
 		nn.FeedFordward(input);
@@ -175,15 +112,14 @@ int main()
 
         std::cout << " -> " ;
         
-        std::vector<float> real = targetOutputsValidate[out];
+        std::vector<float> real = targetOutputsValidate[k];
 
         float error = 0;
         std::cout << "Predicted = " << std::left << std::setw(10) << preds[0] << ", Real =" << std::setw(10) << real[0];
-        generalError += std::abs(preds[0] - real[0]) * 100.0 / real[0];
-        std::cout <<  " Diff = " << std::left << std::abs(preds[0] - real[0]) * 100.0 / real[0] << "%\n";
-        out++;      
+        std::cout <<  " Diff = " << std::left << std::abs(preds[0] - real[0])*100.0/real[0] << "%\n";        
+        k++;      
 	}
-    generalError /= out; 
+    generalError /= k; 
     std::cout << "\n Error promedio: " << generalError << "%";
 	return 0;
 }

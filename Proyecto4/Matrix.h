@@ -58,6 +58,17 @@ class Matrix
 			return output;
 		}
 
+		Matrix averageElements(Matrix& target)
+		{
+			Matrix output(_cols, _rows);
+			for (uint32_t y = 0; y < output._rows; y++)
+				for (uint32_t x = 0; x < output._cols; x++)
+				{
+					output.at(x, y) = (at(x, y) + target.at(x, y))/2;
+				}
+			return output;
+		}
+
 		Matrix multiplyScaler(float s)
 		{
 			Matrix output(_cols, _rows);
