@@ -59,34 +59,32 @@ void genData(std::string filename)
     file2.close();
 }
 
+std::vector<std::vector<float>> sliceData(std::string inputFile, float amount) 
+{
+    std::vector<std::vector<float>> target= readCSVToVector(inputFile);
+    size_t n = round(target.size() * amount);
+    std::vector<std::vector<float>> targetSlice(target.begin(), target.begin() + n);
+    return targetSlice;
+}
+
+
+
 int main()
 {   
-    size_t n;
     genData("test");
 
 	std::vector<uint32_t> topology = {2,3,1};
 	SimpleNeuralNetwork nn(topology, 0.1);
 
     float train = 0.9;
-    float validate = 0.1;
-
-	std::string inputFile = "test-in.csv";
-    std::vector<std::vector<float>> targetInputs = readCSVToVector(inputFile);
-    n = round(targetInputs.size() * train);
-    std::vector<std::vector<float>> targetInputsTrain(targetInputs.begin(), targetInputs.begin() + n);
-
-    n = round(targetInputs.size() * validate);
-    std::vector<std::vector<float>> targetInputsValidate(targetInputs.begin(), targetInputs.begin() + n);
-
-	std::string outputFile = "test-out.csv";
-    std::vector<std::vector<float>> targetOutputs = readCSVToVector(inputFile);
-    n = round(targetOutputs.size() * train);
-    std::vector<std::vector<float>> targetOutputsTrain(targetOutputs.begin(), targetOutputs.begin() + n);
+    float validate = 0.1; 
+       
+    std::vector<std::vector<float>> targetInputsTrain = sliceData("test-in.csv", train);
+    std::vector<std::vector<float>> targetInputsValidate = sliceData("test-in.csv", validate);
+    std::vector<std::vector<float>> targetOutputsTrain = sliceData("test-out.csv", train);
+    std::vector<std::vector<float>> targetOutputsValidate = sliceData("test-out.csv", validate);
 	
-    n = round(targetOutputs.size() * validate);
-    std::vector<std::vector<float>> targetOutputsValidate(targetOutputs.begin(), targetOutputs.begin() + n);
-	
-	uint32_t  epoch = 20000;
+	uint32_t  epoch = 10000;
     uint32_t  k = 0;
 
 	std::cout << "training started\n";
@@ -101,6 +99,8 @@ int main()
 
 	std::cout << "training completed\n";
 
+
+    float generalError = 0;
 	for (auto input : targetInputsValidate)
 	{
 		nn.FeedFordward(input);
@@ -119,5 +119,7 @@ int main()
         std::cout <<  " Diff = " << std::left << std::abs(preds[0] - real[0])*100.0/real[0] << "%\n";        
         k++;      
 	}
+    generalError /= k; 
+    std::cout << "\n Error promedio: " << generalError << "%";
 	return 0;
 }

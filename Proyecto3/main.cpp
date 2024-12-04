@@ -64,7 +64,8 @@ void genData(std::string filename)
         float x = rand() / float(RAND_MAX);
         float y = rand() / float(RAND_MAX);
         file1 << x << ", " << y << std::endl;
-        file2 << 2 * x + 10 + y << std::endl;
+        float q = 2 * x + 10 *y;
+        file2 << q << std::endl;
     }
     file1.close();
     file2.close();
@@ -96,7 +97,7 @@ int main()
     std::vector<std::vector<float>> targetOutputsValidate = sliceData("test-out.csv", validate);
 	
 	uint32_t  epoch = 10000;
-    uint32_t  k = 0;
+    
 
     std::cout << "Population evaluation\n";
 
@@ -132,7 +133,7 @@ int main()
         std::cout << "\rprogress : ";
         std::cout << static_cast<double>(i) * 100.0 / static_cast<double>(nn._populationSize) << " %" << std::flush;
     }
-    std::cout << "Population evaluated\n";
+    std::cout << "\nPopulation evaluated\n";
 
     std::cout << "training started\n";
 
@@ -160,7 +161,9 @@ int main()
 	}
 
 	std::cout << "training completed\n";
+    float generalError = 0;
 
+    uint32_t  out = 0;
 	for (auto input : targetInputsValidate)
 	{
 		nn.FeedFordward(input);
@@ -172,12 +175,15 @@ int main()
 
         std::cout << " -> " ;
         
-        std::vector<float> real = targetOutputsValidate[k];
+        std::vector<float> real = targetOutputsValidate[out];
 
         float error = 0;
         std::cout << "Predicted = " << std::left << std::setw(10) << preds[0] << ", Real =" << std::setw(10) << real[0];
-        std::cout <<  " Diff = " << std::left << std::abs(preds[0] - real[0])*100.0/real[0] << "%\n";        
-        k++;      
+        generalError += std::abs(preds[0] - real[0]) * 100.0 / real[0];
+        std::cout <<  " Diff = " << std::left << std::abs(preds[0] - real[0]) * 100.0 / real[0] << "%\n";
+        out++;      
 	}
+    generalError /= out; 
+    std::cout << "\n Error promedio: " << generalError << "%";
 	return 0;
 }
