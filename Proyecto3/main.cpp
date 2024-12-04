@@ -6,6 +6,17 @@
 #include "NeuralNetwork.h"
 #include <stdexcept>
 #include <iomanip>
+#include <random>
+
+// Function to generate a random number in the range [min, max]
+uint32_t getRandomNumber(uint32_t min, uint32_t max) {
+    // Create a random device and seed
+    std::random_device rd;
+    std::mt19937 generator(rd()); // Use Mersenne Twister for random number generation
+    std::uniform_int_distribution<uint32_t> distribution(min, max);
+    return distribution(generator);
+}
+
 
 
 
@@ -125,20 +136,23 @@ int main()
 
     std::cout << "training started\n";
 
-	for (uint32_t i = 0; i < epoch; i++)
+	for (uint32_t m = 0; m < epoch; m++)
 	{
-		uint32_t index = rand() % (int)(targetInputsTrain.size() - 1);
-		nn.Crossover();
-		nn.FeedFordward(targetInputsTrain[index]);
+        uint32_t p = getRandomNumber(0, targetInputsTrain.size() - 1);
+        nn.Crossover();
+        std::vector<float> t = targetInputsTrain[p];
         
-        std::vector<float> real = targetOutputsValidate[index];
+        nn.FeedFordward(t);
+       
+        std::vector<float> real = targetOutputsTrain[p];
+        std::cout << "A\n";
         auto preds = nn.getPrediction();
         float parError = abs(preds[0] - real[0]) * 100.0 / real[0];
 
         nn.Replace(parError);
 
         std::cout << "\rprogress : ";
-        std::cout << static_cast<double>(i) * 100.0 / static_cast<double>(epoch) << " %" << std::flush;
+        std::cout << static_cast<double>(m) * 100.0 / static_cast<double>(epoch) << " %" << std::flush;
 	}
 
 	std::cout << "training completed\n";

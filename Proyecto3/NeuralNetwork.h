@@ -97,6 +97,29 @@ public:
 		return true;
 	}
 
+	bool FeedFordward2(std::vector<float> input)
+	{
+		if (input.size() != _topology[0])
+			return false;
+		Matrix values(input.size(), 1);//dudas con esto. debería el vector cambiar de tamaño?
+		for (size_t i = 0; i < input.size(); i++)
+		{
+			values._vals[i] = input[i];
+			std::cout << values._vals[i] << "\n";
+		}
+		
+		for (size_t i = 0; i < _weightMatrices.size(); i++)
+		{
+			_valueMatrices[i] = values;
+			values = values.multiply(_weightMatrices[i]);
+			values = values.add(_biasMatrices[i]);
+			values = values.applyFunction(Activation);
+		}
+		
+		_valueMatrices[_weightMatrices.size()] = values;
+		return true;
+	}
+
 	// Function to sort the vector of structs
 	void sortCandidates() {
 		std::sort(_population.begin(), _population.end(), [](const _candidate& a, const _candidate& b) {
@@ -107,6 +130,7 @@ public:
 
 	bool Crossover()
 	{
+		_valueMatrices.resize(_topology.size());
 		sortCandidates();
 		uint32_t parent1 = rand() % (int)(_populationSize / 2.0);
 		uint32_t parent2 = rand() % (int)(_populationSize / 2.0);
@@ -128,14 +152,14 @@ public:
 	}
 
 
-	bool Replace(float error) {
+	void Replace(float error) {
 		if (error < _population.back().error) {
 			_candidate NewCandidate;
 			NewCandidate.weightC = _weightMatrices;
 			NewCandidate.biasC = _biasMatrices;
 			NewCandidate.error = error;
 			_population.back() = NewCandidate;
-			sortCandidates;
+			sortCandidates();
 		}
 	}
 
