@@ -95,7 +95,7 @@ int main()
     std::vector<std::vector<float>> targetOutputsTrain = sliceData("test-out.csv", train);
     std::vector<std::vector<float>> targetOutputsValidate = sliceData("test-out.csv", validate);
 	
-	uint32_t  epoch = 1000;
+	uint32_t  epoch = 10000;
     uint32_t  k = 0;
 
     std::cout << "Population evaluation\n";
@@ -138,17 +138,21 @@ int main()
 
 	for (uint32_t m = 0; m < epoch; m++)
 	{
-        uint32_t p = getRandomNumber(0, targetInputsTrain.size() - 1);
         nn.Crossover();
-        std::vector<float> t = targetInputsTrain[p];
-        
-        nn.FeedFordward(t);
-       
-        std::vector<float> real = targetOutputsTrain[p];
-        std::cout << "A\n";
-        auto preds = nn.getPrediction();
-        float parError = abs(preds[0] - real[0]) * 100.0 / real[0];
+        float parError = 0;
 
+        for (uint32_t i = 0; i < index; i++)
+        {
+            uint32_t p = getRandomNumber(0, targetInputsTrain.size() - 1);
+            std::vector<float> t = targetInputsTrain[p];
+
+            nn.FeedFordward(t);
+
+            std::vector<float> real = targetOutputsTrain[p];
+            auto preds = nn.getPrediction();
+            parError += abs(preds[0] - real[0]) * 100.0 / real[0];
+        }
+        parError /= index;
         nn.Replace(parError);
 
         std::cout << "\rprogress : ";
